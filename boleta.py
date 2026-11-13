@@ -1,4 +1,3 @@
-
 class Boleta:
 
     def __init__(self, visitante, precio):
