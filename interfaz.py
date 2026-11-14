@@ -628,4 +628,81 @@ class InterfazGrafica:
                 nombre = entrada_nombre.get().strip()
                 edad = int(entrada_edad.get().strip())
 
+                if not nombre:
+                    raise ValueError("El nombre no puede estar vacío.")
 
+                if edad <= 0:
+                    raise ValueError("La edad debe ser mayor que cero.")
+
+                if edad >= 18:
+                    tipo = "Mayor de edad"
+                    precio = 10000
+                else:
+                    tipo = "Menor de edad"
+                    precio = 5000
+
+                nuevos_datos = {
+                    "nombre": nombre,
+                    "edad": edad,
+                    "tipo": tipo,
+                    "precio": precio
+                }
+
+                self.backend.actualizar_visitante(
+                    documento,
+                    nuevos_datos
+                )
+
+                messagebox.showinfo(
+                    "Actualización",
+                    "Los datos fueron actualizados."
+                )
+
+                ventana.destroy()
+                self.__mostrar_visitantes()
+
+            except ValueError as error:
+
+                messagebox.showerror(
+                    "Error",
+                    str(error)
+                )
+
+        ttk.Button(
+            ventana,
+            text="Guardar cambios",
+            command=guardar_cambios
+        ).pack(pady=15)
+
+    def __exportar_excel(self):
+
+        destino = filedialog.asksaveasfilename(
+            title="Guardar copia del archivo Excel",
+            defaultextension=".xlsx",
+            filetypes=[("Archivos Excel", "*.xlsx")],
+            initialfile="visitantes_copia.xlsx"
+        )
+
+        if destino:
+
+            try:
+
+                shutil.copy2(
+                    "datos/visitantes.xlsx",
+                    destino
+                )
+
+                messagebox.showinfo(
+                    "Exportación",
+                    "La copia del archivo Excel se guardó correctamente."
+                )
+
+            except Exception as error:
+
+                messagebox.showerror(
+                    "Error de exportación",
+                    str(error)
+                )
+
+    def iniciar(self):
+        self.ventana.mainloop()
