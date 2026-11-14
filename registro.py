@@ -1,4 +1,3 @@
-
 class RegistroVisitas:
 
     def __init__(self):
@@ -34,3 +33,4 @@ class RegistroVisitas:
 
     def cantidad_visitantes(self):
         return len(self.__visitantes)
+
