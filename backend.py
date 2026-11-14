@@ -67,4 +67,81 @@ class BackendExcel:
 
         return None
 
+    def guardar_visitante(self, visitante):
+
+        if self.buscar_por_documento(
+            visitante["documento"]
+        ):
+            raise ValueError(
+                "Ya existe un visitante con ese documento."
+            )
+
+        libro = load_workbook(self.__ruta_archivo)
+        hoja = libro["Visitantes"]
+
+        hoja.append([
+            visitante["documento"],
+            visitante["nombre"],
+            visitante["edad"],
+            visitante["tipo"],
+            visitante["precio"]
+        ])
+
+        libro.save(self.__ruta_archivo)
+        libro.close()
+
+    def actualizar_visitante(self, documento, nuevos_datos):
+
+        libro = load_workbook(self.__ruta_archivo)
+        hoja = libro["Visitantes"]
+
+        encontrado = False
+
+        for fila in range(2, hoja.max_row + 1):
+
+            documento_actual = str(
+                hoja.cell(fila, 1).value
+            )
+
+            if documento_actual == documento:
+
+                hoja.cell(fila, 2).value = nuevos_datos["nombre"]
+                hoja.cell(fila, 3).value = nuevos_datos["edad"]
+                hoja.cell(fila, 4).value = nuevos_datos["tipo"]
+                hoja.cell(fila, 5).value = nuevos_datos["precio"]
+
+                encontrado = True
+                break
+
+        libro.save(self.__ruta_archivo)
+        libro.close()
+
+        if not encontrado:
+            raise ValueError("No se encontró el visitante.")
+
+    def eliminar_visitante(self, documento):
+
+        libro = load_workbook(self.__ruta_archivo)
+        hoja = libro["Visitantes"]
+
+        encontrado = False
+
+        for fila in range(2, hoja.max_row + 1):
+
+            documento_actual = str(
+                hoja.cell(fila, 1).value
+            )
+
+            if documento_actual == documento:
+
+                hoja.delete_rows(fila, 1)
+                encontrado = True
+                break
+
+        libro.save(self.__ruta_archivo)
+        libro.close()
+
+        if not encontrado:
+            raise ValueError("No se encontró el visitante.")
+
 
