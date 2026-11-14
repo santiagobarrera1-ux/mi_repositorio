@@ -23,5 +23,30 @@ class InterfazGrafica:
 
         self.ventana.bind("<F5>", lambda evento: self.__mostrar_visitantes())
 
+    def __crear_icono(self):
 
+        # Crear una imagen pequeña con forma de hoja.
+        self.icono = tk.PhotoImage(width=32, height=32)
+
+        self.icono.put("#ffffff", to=(0, 0, 32, 32))
+
+        # Tallo de la hoja.
+        for y in range(8, 26):
+            x = 16 - (y - 8) // 5
+            self.icono.put("#286b35", (x, y))
+
+        # Forma de la hoja.
+        for y in range(5, 27):
+            ancho = int(10 * (1 - abs(y - 16) / 12))
+
+            for x in range(16 - ancho, 16 + ancho + 1):
+                if 0 <= x < 32:
+                    self.icono.put("#65a947", (x, y))
+
+        # Nervadura central.
+        for y in range(8, 25):
+            x = 16 - (y - 8) // 5
+            self.icono.put("#e0f0c9", (x, y))
+
+        self.ventana.iconphoto(True, self.icono)
 
