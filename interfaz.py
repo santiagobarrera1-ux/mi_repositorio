@@ -86,3 +86,197 @@ class InterfazGrafica:
 
         self.ventana.config(menu=menu_principal)
 
+    def __crear_interfaz(self):
+
+        titulo = ttk.Label(
+            self.ventana,
+            text="GESTIÓN DEL PARQUE BOTÁNICO",
+            font=("Arial", 18, "bold")
+        )
+        titulo.pack(pady=15)
+
+        # Componente adicional: Notebook.
+        # Permite organizar la aplicación en pestañas.
+        self.pestanas = ttk.Notebook(self.ventana)
+        self.pestanas.pack(
+            fill="both",
+            expand=True,
+            padx=15,
+            pady=10
+        )
+
+        self.pestana_visitantes = ttk.Frame(self.pestanas)
+        self.pestana_reportes = ttk.Frame(self.pestanas)
+
+        self.pestanas.add(
+            self.pestana_visitantes,
+            text="Visitantes"
+        )
+
+        self.pestanas.add(
+            self.pestana_reportes,
+            text="Reportes"
+        )
+
+        self.__crear_pestana_visitantes()
+        self.__crear_pestana_reportes()
+
+    def __crear_pestana_visitantes(self):
+
+        formulario = ttk.LabelFrame(
+            self.pestana_visitantes,
+            text="Registrar visitante",
+            padding=12
+        )
+        formulario.pack(
+            fill="x",
+            padx=10,
+            pady=10
+        )
+
+        ttk.Label(formulario, text="Documento:").grid(
+            row=0, column=0, sticky="w", padx=5, pady=5
+        )
+
+        self.entrada_documento = ttk.Entry(formulario)
+        self.entrada_documento.grid(
+            row=0, column=1, padx=5, pady=5
+        )
+
+        ttk.Label(formulario, text="Nombre:").grid(
+            row=1, column=0, sticky="w", padx=5, pady=5
+        )
+
+        self.entrada_nombre = ttk.Entry(formulario)
+        self.entrada_nombre.grid(
+            row=1, column=1, padx=5, pady=5
+        )
+
+        ttk.Label(formulario, text="Edad:").grid(
+            row=2, column=0, sticky="w", padx=5, pady=5
+        )
+
+        self.entrada_edad = ttk.Entry(formulario)
+        self.entrada_edad.grid(
+            row=2, column=1, padx=5, pady=5
+        )
+
+        ttk.Label(formulario, text="Tipo de visitante:").grid(
+            row=3, column=0, sticky="w", padx=5, pady=5
+        )
+
+        self.tipo_visitante = tk.StringVar(value="Automático")
+
+        self.radio_automatico = ttk.Radiobutton(
+            formulario,
+            text="Automático según edad",
+            variable=self.tipo_visitante,
+            value="Automático"
+        )
+        self.radio_automatico.grid(
+            row=3, column=1, sticky="w"
+        )
+
+        self.radio_mayor = ttk.Radiobutton(
+            formulario,
+            text="Mayor de edad",
+            variable=self.tipo_visitante,
+            value="Mayor de edad"
+        )
+        self.radio_mayor.grid(
+            row=4, column=1, sticky="w"
+        )
+
+        self.radio_menor = ttk.Radiobutton(
+            formulario,
+            text="Menor de edad",
+            variable=self.tipo_visitante,
+            value="Menor de edad"
+        )
+        self.radio_menor.grid(
+            row=5, column=1, sticky="w"
+        )
+
+        ttk.Button(
+            formulario,
+            text="Registrar visitante",
+            command=self.__registrar_visitante
+        ).grid(
+            row=6, column=0, columnspan=2, pady=10
+        )
+
+        # Zona de búsqueda y filtro.
+        filtros = ttk.Frame(self.pestana_visitantes)
+        filtros.pack(fill="x", padx=10, pady=5)
+
+        ttk.Label(
+            filtros,
+            text="Filtrar por tipo:"
+        ).pack(side="left", padx=5)
+
+        self.filtro_tipo = ttk.Combobox(
+            filtros,
+            values=[
+                "Todos",
+                "Mayor de edad",
+                "Menor de edad"
+            ],
+            state="readonly",
+            width=20
+        )
+        self.filtro_tipo.set("Todos")
+        self.filtro_tipo.pack(side="left", padx=5)
+
+        self.filtro_tipo.bind(
+            "<<ComboboxSelected>>",
+            lambda evento: self.__mostrar_visitantes()
+        )
+
+        ttk.Button(
+            filtros,
+            text="Actualizar tabla",
+            command=self.__mostrar_visitantes
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            filtros,
+            text="Buscar por documento",
+            command=self.__ventana_busqueda
+        ).pack(side="left", padx=5)
+
+        # Tabla de visitantes.
+        marco_tabla = ttk.Frame(self.pestana_visitantes)
+        marco_tabla.pack(
+            fill="both",
+            expand=True,
+            padx=10,
+            pady=10
+        )
+
+        columnas = (
+            "documento",
+            "nombre",
+            "edad",
+            "tipo",
+            "precio"
+        )
+
+        self.tabla = ttk.Treeview(
+            marco_tabla,
+            columns=columnas,
+            show="headings"
+        )
+
+        self.tabla.heading("documento", text="Documento")
+        self.tabla.heading("nombre", text="Nombre")
+        self.tabla.heading("edad", text="Edad")
+        self.tabla.heading("tipo", text="Tipo")
+        self.tabla.heading("precio", text="Precio")
+
+        self.tabla.column("documento", width=120)
+        self.tabla.column("nombre", width=180)
+        self.tabla.column("edad", width=60)
+        self.tabla.column("tipo", width=130)
+        self.tabla.column("precio", width=100)
+
+
