@@ -144,4 +144,15 @@ class BackendExcel:
         if not encontrado:
             raise ValueError("No se encontró el visitante.")
 
+    def calcular_recaudacion(self):
 
+        visitantes = self.obtener_todos()
+
+        return sum(
+            visitante["precio"]
+            for visitante in visitantes
+        )
+
+    def cantidad_visitantes(self):
+
+        return len(self.obtener_todos())

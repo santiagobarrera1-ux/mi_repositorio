@@ -1,4 +1,3 @@
-
 from visitante import MayorEdad, MenorEdad
 from boleta import Boleta
 from registro import RegistroVisitas
