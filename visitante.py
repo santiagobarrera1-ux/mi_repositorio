@@ -1,4 +1,3 @@
-
 from persona import Persona
 
 
