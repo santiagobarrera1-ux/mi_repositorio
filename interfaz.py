@@ -556,3 +556,76 @@ class InterfazGrafica:
             command=buscar
         ).pack(pady=10)
 
+    def __eliminar_visitante(self):
+
+        documento = self.__obtener_documento_seleccionado()
+
+        if documento is None:
+            return
+
+        confirmar = messagebox.askyesno(
+            "Confirmar eliminación",
+            "¿Desea eliminar este visitante?"
+        )
+
+        if confirmar:
+
+            try:
+
+                self.backend.eliminar_visitante(documento)
+
+                messagebox.showinfo(
+                    "Eliminación",
+                    "El visitante fue eliminado correctamente."
+                )
+
+                self.__mostrar_visitantes()
+
+            except Exception as error:
+
+                messagebox.showerror(
+                    "Error",
+                    str(error)
+                )
+
+    def __ventana_edicion(self):
+
+        documento = self.__obtener_documento_seleccionado()
+
+        if documento is None:
+            return
+
+        visitante = self.backend.buscar_por_documento(documento)
+
+        if not visitante:
+            messagebox.showerror(
+                "Error",
+                "No se encontró el visitante."
+            )
+            return
+
+        ventana = tk.Toplevel(self.ventana)
+        ventana.title("Editar visitante")
+        ventana.geometry("350x300")
+        ventana.transient(self.ventana)
+
+        ttk.Label(ventana, text="Nombre:").pack(pady=5)
+
+        entrada_nombre = ttk.Entry(ventana)
+        entrada_nombre.pack()
+        entrada_nombre.insert(0, visitante["nombre"])
+
+        ttk.Label(ventana, text="Edad:").pack(pady=5)
+
+        entrada_edad = ttk.Entry(ventana)
+        entrada_edad.pack()
+        entrada_edad.insert(0, str(visitante["edad"]))
+
+        def guardar_cambios():
+
+            try:
+
+                nombre = entrada_nombre.get().strip()
+                edad = int(entrada_edad.get().strip())
+
+
