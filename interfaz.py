@@ -50,3 +50,39 @@ class InterfazGrafica:
 
         self.ventana.iconphoto(True, self.icono)
 
+    def __crear_menu(self):
+
+        menu_principal = tk.Menu(self.ventana)
+
+        menu_archivo = tk.Menu(menu_principal, tearoff=0)
+        menu_archivo.add_command(
+            label="Exportar archivo Excel",
+            command=self.__exportar_excel
+        )
+        menu_archivo.add_separator()
+        menu_archivo.add_command(
+            label="Salir",
+            command=self.ventana.destroy
+        )
+
+        menu_principal.add_cascade(
+            label="Archivo",
+            menu=menu_archivo
+        )
+
+        menu_ayuda = tk.Menu(menu_principal, tearoff=0)
+        menu_ayuda.add_command(
+            label="Acerca del programa",
+            command=lambda: messagebox.showinfo(
+                "Acerca de",
+                "Sistema de gestión de entradas del Parque Botánico."
+            )
+        )
+
+        menu_principal.add_cascade(
+            label="Ayuda",
+            menu=menu_ayuda
+        )
+
+        self.ventana.config(menu=menu_principal)
+
