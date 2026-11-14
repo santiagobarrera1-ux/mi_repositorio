@@ -9,10 +9,4 @@ parque = ParqueBotanico(
     precio_menor=20000
 )
 
-backend = BackendExcel("datos/visitantes.xlsx")
 
-aplicacion = InterfazGrafica(parque, backend)
-
-aplicacion.iniciar()
-
-print("hola")
