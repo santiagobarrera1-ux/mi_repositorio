@@ -15,4 +15,22 @@ class BackendExcel:
 
         self.__crear_archivo()
 
+   def __crear_archivo(self):
+
+        if not os.path.exists(self.__ruta_archivo):
+
+            libro = Workbook()
+            hoja = libro.active
+            hoja.title = "Visitantes"
+
+            hoja.append([
+                "Documento",
+                "Nombre",
+                "Edad",
+                "Tipo",
+                "Precio"
+            ])
+
+            libro.save(self.__ruta_archivo)
+            libro.close()
 
