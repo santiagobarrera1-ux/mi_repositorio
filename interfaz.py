@@ -279,4 +279,280 @@ class InterfazGrafica:
         self.tabla.column("tipo", width=130)
         self.tabla.column("precio", width=100)
 
+        barra = ttk.Scrollbar(
+            marco_tabla,
+            orient="vertical",
+            command=self.tabla.yview
+        )
+
+        self.tabla.configure(yscrollcommand=barra.set)
+
+        self.tabla.pack(side="left", fill="both", expand=True)
+        barra.pack(side="right", fill="y")
+
+        self.tabla.bind(
+            "<Double-1>",
+            self.__mostrar_detalles
+        )
+
+        botones = ttk.Frame(self.pestana_visitantes)
+        botones.pack(pady=5)
+
+        ttk.Button(
+            botones,
+            text="Eliminar seleccionado",
+            command=self.__eliminar_visitante
+        ).pack(side="left", padx=5)
+
+        ttk.Button(
+            botones,
+            text="Editar seleccionado",
+            command=self.__ventana_edicion
+        ).pack(side="left", padx=5)
+
+    def __crear_pestana_reportes(self):
+
+        marco = ttk.LabelFrame(
+            self.pestana_reportes,
+            text="Resumen del parque",
+            padding=20
+        )
+        marco.pack(
+            fill="x",
+            padx=20,
+            pady=20
+        )
+
+        self.etiqueta_cantidad = ttk.Label(
+            marco,
+            text="Cantidad de visitantes: 0",
+            font=("Arial", 13)
+        )
+        self.etiqueta_cantidad.pack(pady=10)
+
+        self.etiqueta_recaudacion = ttk.Label(
+            marco,
+            text="Recaudación total: $0",
+            font=("Arial", 13)
+        )
+        self.etiqueta_recaudacion.pack(pady=10)
+
+        ttk.Button(
+            marco,
+            text="Actualizar reportes",
+            command=self.__actualizar_reportes
+        ).pack(pady=10)
+
+    def __registrar_visitante(self):
+
+        documento = self.entrada_documento.get().strip()
+        nombre = self.entrada_nombre.get().strip()
+        edad_texto = self.entrada_edad.get().strip()
+
+        try:
+
+            if not documento or not nombre or not edad_texto:
+                raise ValueError(
+                    "Todos los campos son obligatorios."
+                )
+
+            edad = int(edad_texto)
+
+            if edad <= 0:
+                raise ValueError(
+                    "La edad debe ser mayor que cero."
+                )
+
+            tipo_seleccionado = self.tipo_visitante.get()
+
+            if tipo_seleccionado == "Mayor de edad" and edad < 18:
+                raise ValueError(
+                    "La edad no corresponde a un mayor de edad."
+                )
+
+            if tipo_seleccionado == "Menor de edad" and edad >= 18:
+                raise ValueError(
+                    "La edad no corresponde a un menor de edad."
+                )
+
+            # Revisar duplicados directamente en Excel.
+            if self.backend.buscar_por_documento(documento):
+                raise ValueError(
+                    "Ya existe un visitante con ese documento."
+                )
+
+            # Crear la boleta usando las clases de la primera parte.
+            boleta = self.parque.registrar_visitante(
+                documento,
+                nombre,
+                edad
+            )
+
+            visitante = {
+                "documento": documento,
+                "nombre": nombre,
+                "edad": edad,
+                "tipo": boleta.visitante.obtener_tipo(),
+                "precio": boleta.calcular_total()
+            }
+
+            # Guardar permanentemente en Excel.
+            self.backend.guardar_visitante(visitante)
+
+            messagebox.showinfo(
+                "Registro exitoso",
+                boleta.mostrar_boleta()
+            )
+
+            self.__limpiar_campos()
+            self.__mostrar_visitantes()
+
+        except ValueError as error:
+
+            messagebox.showerror(
+                "Error de registro",
+                str(error)
+            )
+
+        except Exception as error:
+
+            messagebox.showerror(
+                "Error",
+                f"No se pudo registrar el visitante:\n{error}"
+            )
+
+    def __limpiar_campos(self):
+
+        self.entrada_documento.delete(0, tk.END)
+        self.entrada_nombre.delete(0, tk.END)
+        self.entrada_edad.delete(0, tk.END)
+
+        self.tipo_visitante.set("Automático")
+
+    def __mostrar_visitantes(self):
+
+        for elemento in self.tabla.get_children():
+            self.tabla.delete(elemento)
+
+        visitantes = self.backend.obtener_todos()
+
+        filtro = self.filtro_tipo.get()
+
+        for visitante in visitantes:
+
+            if filtro != "Todos" and visitante["tipo"] != filtro:
+                continue
+
+            self.tabla.insert(
+                "",
+                tk.END,
+                values=(
+                    visitante["documento"],
+                    visitante["nombre"],
+                    visitante["edad"],
+                    visitante["tipo"],
+                    f"${visitante['precio']:,.0f}"
+                )
+            )
+
+        self.__actualizar_reportes()
+
+    def __actualizar_reportes(self):
+
+        cantidad = self.backend.cantidad_visitantes()
+        recaudacion = self.backend.calcular_recaudacion()
+
+        self.etiqueta_cantidad.config(
+            text=f"Cantidad de visitantes: {cantidad}"
+        )
+
+        self.etiqueta_recaudacion.config(
+            text=f"Recaudación total: ${recaudacion:,.0f}"
+        )
+
+    def __obtener_documento_seleccionado(self):
+
+        seleccion = self.tabla.selection()
+
+        if not seleccion:
+            messagebox.showwarning(
+                "Selección",
+                "Primero selecciona un visitante de la tabla."
+            )
+            return None
+
+        valores = self.tabla.item(seleccion[0], "values")
+
+        return str(valores[0])
+
+    def __mostrar_detalles(self, evento):
+
+        documento = self.__obtener_documento_seleccionado()
+
+        if documento is None:
+            return
+
+        visitante = self.backend.buscar_por_documento(documento)
+
+        if visitante:
+
+            messagebox.showinfo(
+                "Detalles del visitante",
+                f"Documento: {visitante['documento']}\n"
+                f"Nombre: {visitante['nombre']}\n"
+                f"Edad: {visitante['edad']}\n"
+                f"Tipo: {visitante['tipo']}\n"
+                f"Precio: ${visitante['precio']:,.0f}"
+            )
+
+    def __ventana_busqueda(self):
+
+        ventana = tk.Toplevel(self.ventana)
+        ventana.title("Buscar visitante")
+        ventana.geometry("350x180")
+        ventana.transient(self.ventana)
+
+        ttk.Label(
+            ventana,
+            text="Ingrese el documento:"
+        ).pack(pady=10)
+
+        entrada = ttk.Entry(ventana)
+        entrada.pack(pady=5)
+
+        def buscar():
+
+            documento = entrada.get().strip()
+
+            if not documento:
+                messagebox.showwarning(
+                    "Búsqueda",
+                    "Escriba un documento."
+                )
+                return
+
+            visitante = self.backend.buscar_por_documento(documento)
+
+            if visitante:
+
+                messagebox.showinfo(
+                    "Visitante encontrado",
+                    f"Nombre: {visitante['nombre']}\n"
+                    f"Edad: {visitante['edad']}\n"
+                    f"Tipo: {visitante['tipo']}\n"
+                    f"Precio: ${visitante['precio']:,.0f}"
+                )
+
+            else:
+
+                messagebox.showwarning(
+                    "Sin resultados",
+                    "No se encontró un visitante con ese documento."
+                )
+
+        ttk.Button(
+            ventana,
+            text="Buscar",
+            command=buscar
+        ).pack(pady=10)
 
